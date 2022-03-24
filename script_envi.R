@@ -142,129 +142,65 @@ write.xlsx(fpicea,"Lokality_F.picea_CMV_mm_cluster.xlsx")
 ## envicompare
 df.rand<-readRDS("CZG_random10e5.rds")
 df.pres<-readRDS("CZG_presence.rds")
-
-df<-rbind(df.pres,df.rand)
+dff<-rbind(df.pres,df.rand)
 
 ## elevation
 library(ggplot2)
 
-p<- ggplot(data = df,alpha=0.3,aes(x=elevation_10m094,fill=group)) + 
+p<- ggplot(data = dff,alpha=0.3,aes(x=elevation_10m094,fill=group)) + 
   geom_density() +
-  geom_density(data=df,alpha=0.3,aes(x=elevation_10m094,fill=group)) +
+  geom_density(data=dff,alpha=0.3,aes(x=elevation_10m094,fill=group)) +
   theme(aspect.ratio = 1) +
   labs(y="Density")+
   labs(x="Elevation")+
   ggtitle("Distribution ascross altitude")
 print(p)
-ggsave("elevation.png",units="cm",height = 10,width = 10,dpi=300,scale=1.5)
-
-
-
-# pr<-summary(factor(bex_ext[bex_ext$pa=="presence",c(fcts[i])]))
-# pr<-data.frame(id=names(pr),presence=as.numeric(pr))
-# 
-# bg<-summary(factor(bex_ext[bex_ext$pa=="bg",c(fcts[i])]))
-# bg<-data.frame(id=names(bg),background=as.numeric(bg))
-# 
-# df<-merge(bg,pr)
-# df$presence<-range01(df$presence)
-# df$background<-range01(df$background)
-# 
-# df2<-melt(df)
-# names(df2)<-c(fcts[i],"species","density")
-# p2<-ggplot(df2, aes(x = get(fcts[i]), y= density, fill = species)) +
-#   geom_bar(stat="identity", width=.5, position = "dodge")+
-#   xlab(fcts[i]) +
-#   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-# print(p2)
-# 
-# df$Clusters4class
-
-
-
-
+ggsave("elevation.png",units="cm",height = 10,width = 10,dpi=200,scale=1.5)
 
 
 
 ## temperature
-p<-ggplot(data =df,aes(x=MeanAirTemp_f14t19,linetype=group,colour=group)) + 
-  geom_density(alpha=0.3,aes(x=MeanAirTemp_f14t19),size=1.5,show.legend = F) +
-  scale_linetype_manual(values = c("dashed", "solid", "dashed"))+
-  scale_color_manual(values = c(col.mech,"grey",col.lich))+
+p<- ggplot(data = dff,alpha=0.3,aes(x=Q095AirTemp_f14t19,fill=group)) + 
+  geom_density() +
+  geom_density(data=dff,alpha=0.3,aes(x=Q095AirTemp_f14t19,fill=group)) +
   theme(aspect.ratio = 1) +
   labs(y="Density") +
-  labs(x="Average air temperature 2014 - 2019 [°C]")
+  labs(x="Maximum air temperature 2014 - 2019 [°C]")+
+  ggtitle("Distribution ascross maximum air temperature")
 print(p)
-
-png("CZG_airtemp.png",width = 600,height = 600)
-print(p)
-dev.off()
+ggsave("Tmax.png",units="cm",height = 10,width = 10,dpi=200,scale=1.5)
 
 ## precipitation
-p<-ggplot(data =df,aes(x=MeanPrecipitation_f14t19,linetype=group,colour=group)) + 
-  geom_density(alpha=0.3,aes(x=MeanPrecipitation_f14t19),size=1.5,show.legend = F) +
-  scale_linetype_manual(values = c("dashed", "solid", "dashed"))+
-  scale_color_manual(values = c(col.mech,"grey",col.lich))+
-  theme(aspect.ratio = 1) +
+p<- ggplot(data = dff,alpha=0.3,aes(x=MeanPrecipitation_f14t19,fill=group)) + 
+  geom_density() +
+  geom_density(data=dff,alpha=0.3,aes(x=MeanPrecipitation_f14t19,fill=group)) +
   labs(y="Density") +
-  labs(x="Average precipitation 2014 - 2019 [mm]")
+  labs(x="Average precipitation 2014 - 2019 [mm]")+
+  ggtitle("Distribution ascross precipitation")
 print(p)
+ggsave("Precip.png",units="cm",height = 10,width = 10,dpi=200,scale=1.5)
 
-png("CZG_precipitation.png",width = 600,height = 600)
-print(p)
-dev.off()
+## clusters
+pr<-summary(factor(dff[df$group=="presence","Clusters4class"]))
+pr<-data.frame(id=names(pr),presence=as.numeric(pr))
+bg<-summary(factor(df[dff$group=="background","Clusters4class"]))
+bg<-data.frame(id=names(bg),background=as.numeric(bg))
+df<-merge(bg,pr)
 
+range01 <- function(x){(x-min(x))/(max(x)-min(x))}
 
+df$presence<-range01(df$presence)
+df$background<-range01(df$background)
 
-## biotop type 
+library(tidyr)
+df2<-pivot_longer(df,2:3)
+names(df2)<-c("cluster","species","density")
+library(ggplot2)
 
-codes<-fread("d://Git/biotope_type_AOPK_biotop_codes.csv")
-colnames(codes)<-c("source","biotop","name")
-
-## Lichens ##
-lisejniky<-merge(lisejniky.red,codes,by="biotop",all.x=T)
-
-## Common
-lisejniky.comon<-lisejniky[lisejniky$RL_eval %!in% rare,]
-lisejniky.comon<-lisejniky.comon%>% distinct(name_lat,name,.keep_all = F)
-lisejniky.comon<-lisejniky.comon[lisejniky.comon$name!="Not classified",]
-lisejniky.comon<-lisejniky.comon[lisejniky.comon$name!="",]
-lisejniky.comon<-lisejniky.comon[!is.na(lisejniky.comon$name),]
-
-l<-sort(summary(as.factor(lisejniky.comon$name),maxsum=Inf),decreasing = T)
-dfl<-data.frame(code=names(l),count=l)
-(dfl$count[1]/sum(dfl$count))*100 # 15 % lichen records not classified biotope
-dfln<-dfl
-dfln$statut<-"Common"
-dfln<-dfln[1:10,]
-sel<-rownames(dfln)
-
-## Red-listed 
-# lisejniky.re<-lisejniky[lisejniky$name_lat!="Usnea barbata",] # without Usnea barbata
-lisejniky.rare.only<-lisejniky[lisejniky$RL_eval %in% rare,] # only rare species
-lisejniky.rare.only<-lisejniky.rare.only%>% distinct(name_lat,name,.keep_all = F)
-lisejniky.rare.only<-lisejniky.rare.only[lisejniky.rare.only$name!="Not classified",]
-lisejniky.rare.only<-lisejniky.rare.only[lisejniky.rare.only$name!="",]
-lisejniky.rare.only<-lisejniky.rare.only[!is.na(lisejniky.rare.only$name),]
-
-l<-sort(summary(as.factor(lisejniky.rare.only[,"name"]),maxsum=Inf),decreasing = T)
-dfl<-data.frame(code=names(l),count=l)
-dflr<-dfl
-dflr$statut<-"Red-listed"
-dflr<-dflr[sel,]
-
-df<-rbind(dfln,dflr)
-df$count<-as.numeric(df$count)
-
-p<-ggplot(data=df, aes(y=reorder(code,-count), x=count,fill=statut)) +
-  geom_bar(stat="identity", width=0.5,position="dodge",orientation = "y",show.legend = T)+
-  scale_y_discrete(labels = function(x) str_wrap(x, width = 60)) +
-  scale_fill_manual("",values = rep(c(col.lich,col.lich1),5))+
-  ylab(NULL) +  
-  theme(legend.position = "bottom",
-        text = element_text(size = 7))
-print(p)
-
-ggsave("AOPK_biotope_type_lichens.png",p,units="cm",width = 11,height = 11,dpi=300)
-
-
+p2<-ggplot(df2, aes(x = cluster, y= density, fill = species)) +
+  geom_bar(stat="identity", width=.5, position = "dodge")+
+  xlab("cluster") +
+  ggtitle("Distribution ascross Clusters [4 classes]")+
+  theme(axis.text.x = element_text(vjust = 0.5, hjust=1))
+print(p2)
+ggsave("clusters.png",units="cm",height = 10,width = 10,dpi=200,scale=1.5)

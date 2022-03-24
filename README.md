@@ -25,7 +25,7 @@ Table shows the mean values for clusters. Std.Dev shows the deviation within clu
 | 4       | 2.21709  | -1.27 | -9.92 | 31.16 | 603.07   | 528.47    | 1432.90 |
 
   
-<th><img src="clusters_map.png" width="400"/></th>
+<th><img src="clusters_map.PNG" width="400"/></th>
   
   
 <th><img src="clusters.png" width="400"/></th>

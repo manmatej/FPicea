@@ -204,3 +204,5 @@ p2<-ggplot(df2, aes(x = cluster, y= density, fill = species)) +
   theme(axis.text.x = element_text(vjust = 0.5, hjust=1))
 print(p2)
 ggsave("clusters.png",units="cm",height = 10,width = 10,dpi=200,scale=1.5)
+
+aggregate(dff$Q095AirTemp_f14t19, list(dff$Clusters4class), FUN=mean) 
